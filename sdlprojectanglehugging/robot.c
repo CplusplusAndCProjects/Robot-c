@@ -4,33 +4,76 @@ void setup_robot(struct Robot *robot){
     robot->angle = 0;
     switch (robot->maze) {
         case BASIC_MAZE:
+        {
             robot->x = OVERALL_WINDOW_WIDTH/2-50;
             robot->y = OVERALL_WINDOW_HEIGHT-50;
             robot->true_x = OVERALL_WINDOW_WIDTH/2-50;
             robot->true_y = OVERALL_WINDOW_HEIGHT-50;
             break;
+        }
+
 
         case COLINS_MAZE:
+        {
             robot->x = OVERALL_WINDOW_WIDTH/2;
             robot->y = OVERALL_WINDOW_HEIGHT-50;
             robot->true_x = OVERALL_WINDOW_WIDTH/2;
             robot->true_y = OVERALL_WINDOW_HEIGHT-50;
             break;
+        }
+
 
         case ANGULAR_MAZE:
+        {
             robot->x = OVERALL_WINDOW_WIDTH/2-280;
             robot->y = OVERALL_WINDOW_HEIGHT-50;
             robot->true_x = OVERALL_WINDOW_WIDTH/2-280;
             robot->true_y = OVERALL_WINDOW_HEIGHT-50;
             break;
+        }
+
 
         case CRAZY_MAZE:
+        {
             robot->x = 60;
             robot->y = 20;
             robot->true_x = 60;
             robot->true_y = 20;
             robot->angle += 180;
             break;
+        }
+        case Maze5:
+        {
+            robot->x = 170;
+            robot->y = 460;
+            robot->true_x = 170;
+            robot->true_y = 460;
+            robot->width = ROBOT_WIDTH;
+            robot->height = ROBOT_HEIGHT;
+            robot->direction = 0;
+            robot->angle = 0;
+            robot->currentSpeed = 0;
+            robot->crashed = 0;
+            robot->auto_mode = 0;
+            break;
+        }
+        case Maze6:
+        {
+            robot->x = 270;
+            robot->y = 460;
+            robot->true_x = 270;
+            robot->true_y = 460;
+            robot->width = ROBOT_WIDTH;
+            robot->height = ROBOT_HEIGHT;
+            robot->direction = 0;
+            robot->angle = 0;
+            robot->currentSpeed = 0;
+            robot->crashed = 0;
+            robot->auto_mode = 0;
+            printf("Press arrow keys to move manually, or enter to move automatically\n\n");
+        }
+
+
     }
     robot->width = ROBOT_WIDTH;
     robot->height = ROBOT_HEIGHT;
@@ -494,162 +537,219 @@ void robotMotorMove(struct Robot * robot) {
     robot->y = (int) y_offset;
 }
 
+
 void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_right_sensor, int left_sensor, int right_sensor,
                         int left_back_sensor, int right_back_sensor) {
 
     int for_front, away_front, for_main, away_main, for_back, away_back=0;
 
-    if (robot->following == LEFT) {
-        for_front = front_left_sensor;
-        away_front = front_right_sensor;
-        for_main = left_sensor;
-        away_main = right_sensor;
-        for_back = left_back_sensor;
-        away_back = right_back_sensor;
-    } else {
-        for_front = front_right_sensor;
-        away_front = front_left_sensor;
-        for_main = right_sensor;
-        away_main = left_sensor;
-        for_back = right_back_sensor;
-        away_back = left_back_sensor;
-    }
+
 
     //printf("---new cycle---\n");
-    //printf("for_front: %d, away_front: %d, for_main: %d, away_main: %d, for_back: %d, away_back: %d\n", for_front, away_front, for_main, away_main, for_back, away_back);
+    printf("front_left_sensor: %d, front_right_sensor: %d, left_sensor: %d, right_sensor: %d, left_back_sensor: %d, right_back_sensor: %d\n", front_left_sensor, front_right_sensor, 
+    right_sensor, right_sensor, left_back_sensor, right_back_sensor);
 
-    switch (robot->state) {
 
-    case SEARCHING:
-        printf("searching\n");
-        if ((front_left_sensor > 0) || (front_right_sensor > 0)) {
-            if (robot->currentSpeed > 0) {
-                robot->direction = DOWN;
-            } else {
-                robot->following = LEFT;
-                robot->state = TURN_AWAY;
-                robot->targetAngle = 90;
-            }
-        } else if ((left_sensor > 0) || (left_back_sensor > 0)) {
-            robot->following = LEFT;
-            robot->state = FOLLOWING;
-        } else if ((right_sensor > 0) || (right_back_sensor > 0)) {
-            robot->following = RIGHT;
-            robot->state = FOLLOWING;
-        } else if (robot->currentSpeed < SOFT_SPEED_LIMIT) {
-            robot->direction = UP;
+    if((right_sensor>0 && right_back_sensor>0) || front_right_sensor >0)
+    {
+        
+        if(front_left_sensor > front_right_sensor || left_sensor > right_sensor)
+        {
+            printf("following case 1\n");
+            //if()
+            robot->direction = RIGHT;
         }
-        break;
+        else
+        {
+            printf("following case 2\n");
+            robot->direction = LEFT;
+        }
+            
+    }
+    else if ((left_sensor>0 && left_back_sensor> 0) || front_left_sensor >0)
+    {
+        if(front_left_sensor < front_right_sensor ||  left_sensor < right_sensor)
+        {
+            printf("following case 3\n");
+            robot->direction = LEFT;
+        }
+            
+        else
+        {
+            printf("following case 4\n");
+            robot->direction = RIGHT;
+        }
+            
 
-    case FOLLOWING:
-        printf("following\n");
-        //printf("speed is %d\n", robot->currentSpeed);
-        if (((for_main == 0) && (for_back == 0)) || (for_front > 0) || (away_front > 0)) {
-            //printf("decelerating\n");
+    }
+    
+    else
+    {
+        printf("following case 3\n");
+        robot->direction = UP;
+        if (robot->currentSpeed > SOFT_SPEED_LIMIT) {
+            printf("searching case 5\n");
             robot->direction = DOWN;
-            robot->state = DECELERATE;
-        } else if (robot->currentSpeed < SOFT_SPEED_LIMIT) {
-            robot->direction = UP;
-        }// else if ((for_back > for_main) && (for_main > 0) && (for_back > 0)) {
-         //   robot->direction = robot->following;
-        //}
-        break;
-
-    case TURN_FORW:
-        printf("turning forward\n");
-        if (robot->targetAngle <= 0) {
-            if ((for_front > 0) || (away_front > 0)) {
-                robot->state = DECELERATE;
-            } if (robot->currentSpeed < SOFT_SPEED_LIMIT) {
-                robot->direction = UP;
-            } else if (for_main > 0) {
-                robot->state = FOLLOWING;
-            }
-        } else {
-            //printf("turning\n");
-            robot->direction = robot->following;
-            robot->targetAngle -= DEFAULT_ANGLE_CHANGE;
         }
-        break;
-
-    case TURN_AWAY:
-        printf("turning away\n");
-        if (robot->targetAngle <= 0) {
-            robot->state = FOLLOWING;
-        } else {
-            if (robot->following == LEFT) {
-                robot->direction = RIGHT;
-            } else {
-                robot->direction = LEFT;
-            }
-            robot->targetAngle -= DEFAULT_ANGLE_CHANGE;
-        }
-        break;
-
-    case DECELERATE:
-        printf("DECELERATE\n");
-        if (robot->decelDelay > 0) {
-            robot->decelDelay--;
-            if (robot->decelDelay == 0) {
-                robot->direction = DOWN;
-            }
-        } else if (robot->currentSpeed > 1) {
-            robot->direction = DOWN;
-        } else if (robot->currentSpeed > 0) {
-            if ((for_front > 3) || (away_front > 3)) {
-                robot->direction = DOWN;
-            } else if ((for_main == 0) && (for_back == 0)) {
-                robot->decelDelay = 2;
-            }
-        } else if ((for_main == 0) && (for_back == 0)) {
-            robot->state = TURN_FORW;
-            robot->targetAngle = 90;
-        } else {
-            robot->state = TURN_AWAY;
-            robot->targetAngle = (away_front - for_front) * 15 + 90;
-            printf("Angle is %d\n", robot->targetAngle);
-        }
-        break;
 
     }
 
 }
 
-// void robotAutoMotorMove(struct Robot *robot, int front_left_sensor, int front_right_sensor, int check_, int turns_[], int checkturn_)
-// {
+// void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_right_sensor, int left_sensor, int right_sensor,
+//                         int left_back_sensor, int right_back_sensor) {
 
+//     int for_front, away_front, for_main, away_main, for_back, away_back=0;
 
-//      printf("DIRECTION: %d,Current speed: %d, check: %d ,checkturn: %d, front_left_sensor: %d , front_right_sensor: %d \n", robot->direction, robot->currentSpeed ,check_,  checkturn_, front_left_sensor, front_right_sensor);
-//     if ((front_left_sensor == 0) && (front_right_sensor == 0))
-//     {
-//         if (robot->currentSpeed < 2)
-//         {
+//     if (robot->following == LEFT) {
+//         for_front = front_left_sensor;
+//         away_front = front_right_sensor;
+//         for_main = left_sensor;
+//         away_main = right_sensor;
+//         for_back = left_back_sensor;
+//         away_back = right_back_sensor;
+//     } else {
+//         for_front = front_right_sensor;
+//         away_front = front_left_sensor;
+//         for_main = right_sensor;
+//         away_main = left_sensor;
+//         for_back = right_back_sensor;
+//         away_back = left_back_sensor;
+//     }
+
+//     //printf("---new cycle---\n");
+//     printf("front_left_sensor: %d, front_right_sensor: %d, left_sensor: %d, right_sensor: %d, left_back_sensor: %d, right_back_sensor: %d\n", front_left_sensor, front_right_sensor, 
+//     right_sensor, right_sensor, left_back_sensor, right_back_sensor);
+
+//     switch (robot->state) {
+
+//     case SEARCHING:
+//         printf("searching\n");
+//         if ((front_left_sensor > 0) || (front_right_sensor > 0)) {
+//             if (robot->currentSpeed > 0) {
+//                 printf("searching case 1\n");
+//                 robot->direction = DOWN;
+//             } else {
+//                 printf("searching case 2\n");
+//                 robot->following = LEFT;
+//                 robot->state = TURN_AWAY;
+//                 robot->targetAngle = 90;
+//             }
+//         } else if ((left_sensor > 0) || (left_back_sensor > 0)) {
+//             printf("searching case 3\n");
+//             robot->following = LEFT;
+//             robot->state = FOLLOWING;
+//         } else if ((right_sensor > 0) || (right_back_sensor > 0)) {
+//             printf("searching case 4\n");
+//             robot->following = RIGHT;
+//             robot->state = FOLLOWING;
+//         } else if (robot->currentSpeed < SOFT_SPEED_LIMIT) {
+//             printf("searching case 5\n");
 //             robot->direction = UP;
-//             check_ = 1;
 //         }
-//     }
-//     else if ((robot->currentSpeed > 0) && ((front_left_sensor == 1) || (front_right_sensor == 1)))
-//     {
-//         robot->direction = DOWN;
-//     }
-//     else if ((robot->currentSpeed == 0) && ((front_left_sensor == 1) || (front_right_sensor == 1)))
-//     {
+//         break;
 
-//         if (check_ == 1)
-//         {
-//             checkturn_ += 1;
-        
+//     case FOLLOWING:
+//         printf("following\n");
+//         //printf("speed is %d\n", robot->currentSpeed);
+//         if (((for_main == 0) && (for_back == 0)) || (for_front > 0) || (away_front > 0)) {
+//             //printf("decelerating\n");
+//             printf("following case 1\n");
+//             robot->direction = DOWN;
+//             robot->state = DECELERATE;
+//         } else if (robot->currentSpeed < SOFT_SPEED_LIMIT) {
+//             if(left_sensor>0 && right_sensor>0 && right_back_sensor>0 && left_back_sensor == 0)
+//             {
+//                 printf("following case 2\n");
+//                 //robot->targetAngle -= DEFAULT_ANGLE_CHANGE;
+//                 robot->direction = LEFT;
+//                 //robot->direction = UP;
+//             }
+//             else
+//             {
+//                 printf("following case 3\n");
+//                 //robot->targetAngle += DEFAULT_ANGLE_CHANGE;
+//                 robot->direction = RIGHT;
+//                 robot->direction = UP;
+
+//             }
+//             //robot->state = SEARCHING;
+
+//         }// else if ((for_back > for_main) && (for_main > 0) && (for_back > 0)) {
+//          //   robot->direction = robot->following;
+//         //}
+//         break;
+
+//     case TURN_FORW:
+//         printf("turning forward\n");
+//         if (robot->targetAngle <= 0) {
+//             if ((for_front > 0) || (away_front > 0)) {
+//                 printf("turning forward case 1\n");
+//                 robot->state = DECELERATE;
+//             } if (robot->currentSpeed < SOFT_SPEED_LIMIT) {
+//                 printf("turning forward case 2\n");
+//                 robot->direction = UP;
+//             } else if (for_main > 0) {
+//                 printf("turning forward case 3\n");
+//                 robot->state = FOLLOWING;
+//             }
+//         } else {
+//             //printf("turning\n");
+//             printf("turning forward case 4\n");
+//             robot->direction = robot->following;
+//             robot->targetAngle -= DEFAULT_ANGLE_CHANGE;
 //         }
-//         robot->direction = turns_[checkturn_];
-//         check_ = 0;
-//     }
-//     else if ((robot->currentSpeed == 0) && ((front_left_sensor == 1) || (front_right_sensor == 0)))
-//     {
-//         robot->direction = RIGHT;
-//     }
-//     else if ((robot->currentSpeed == 0) && ((front_left_sensor == 0) || (front_right_sensor == 1)))
-//     {
-//         robot->direction = LEFT;
+//         break;
+
+//     case TURN_AWAY:
+//         printf("turning away\n");
+//         if (robot->targetAngle <= 0) {
+//             printf("turning away case 1\n");
+//             robot->state = FOLLOWING;
+//         } else {
+//              robot->targetAngle -= DEFAULT_ANGLE_CHANGE;
+//             if (robot->following == LEFT) {
+//                 printf("turning away case 2\n");
+//                 robot->direction = RIGHT;
+//             } else {
+//                 printf("turning away case 3\n");
+//                 robot->direction = LEFT;
+//             }
+           
+//         }
+//         break;
+
+//     case DECELERATE:
+//         printf("DECELERATE\n");
+//         if (robot->decelDelay > 0) {
+//             robot->decelDelay--;
+//             if (robot->decelDelay == 0) {
+//                 printf("DECELERATE case 1\n");
+//                 robot->direction = DOWN;
+//             }
+//         } else if (robot->currentSpeed > 1) {
+//             printf("DECELERATE case 2\n");
+//             robot->direction = DOWN;
+//         } else if (robot->currentSpeed > 0) {
+//             if ((for_front > 3) || (away_front > 3)) {
+//                 printf("DECELERATE case 3\n");
+//                 robot->direction = DOWN;
+//             } else if ((for_main == 0) && (for_back == 0)) {
+//                 printf("DECELERATE case 4\n");
+//                 robot->decelDelay = 2;
+//             }
+//         } else if ((for_main == 0) && (for_back == 0)) {
+//             printf("DECELERATE case 5\n");
+//             robot->state = TURN_FORW;
+//             robot->targetAngle = 90;
+//         } else {
+//             printf("DECELERATE case 6\n");
+//             robot->state = TURN_AWAY;
+//             robot->targetAngle = (away_front - for_front) * 15 + 90;
+//             printf("Angle is %d\n", robot->targetAngle);
+//         }
+//         break;
+
 //     }
 
 // }

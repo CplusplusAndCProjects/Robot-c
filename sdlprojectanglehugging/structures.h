@@ -14,7 +14,7 @@
 
 #define WALL_WIDTH 10
 
-#define DEFAULT_ANGLE_CHANGE 30
+#define DEFAULT_ANGLE_CHANGE 15
 #define DEFAULT_SPEED_CHANGE 1
 #define MAX_ROBOT_SPEED 25
 #define PI 3.14159265
@@ -30,8 +30,10 @@
 #define COLINS_MAZE 2
 #define ANGULAR_MAZE 3
 #define CRAZY_MAZE 4
+#define Maze5 5
+#define Maze6 6
 
-#define SOFT_SPEED_LIMIT 5
+#define SOFT_SPEED_LIMIT 3
 
 struct Wall {
     int x,y;
