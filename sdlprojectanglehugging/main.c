@@ -33,7 +33,6 @@ int main(int argc, char *argv[]) {
 
     struct Robot robot;
     robot.maze = CRAZY_MAZE;
-;
     struct Wall_collection *head = NULL;
     int front_left_sensor, front_right_sensor, left_sensor, right_sensor, left_back_sensor, right_back_sensor=0;
     clock_t start_time, end_time;

@@ -1,0 +1,8 @@
+build project
+	gcc -Isrc/Include -Lsrc/lib robot.c wall.c formulas -o main main.c -lmingw32 -lSDL2main -lSDL2
+
+run project: 
+.\main.exe
+
+run project with others map
+config value of variable DEFAULT_ANGLE_CHANGE in structures.h file
