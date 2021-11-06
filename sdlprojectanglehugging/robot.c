@@ -564,7 +564,7 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
     printf("maxvalueSensor = %d\n", maxvalueSensor);
     // tang toc ban dau
 
-    if(robot->maze != CRAZY_MAZE)
+    //if(robot->maze == CRAZY_MAZE)
     {
         if( robot->currentSpeed <=1){
             robot->currentSpeed = 1;
@@ -701,9 +701,53 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
             preState1 = robot->direction;
         }
     }
-    else {
-        
-    }
+    // else 
+    // {
+    //         if((right_sensor>0 && right_back_sensor>0) || front_right_sensor >0)
+    //         {
+                
+    //             if(front_left_sensor > front_right_sensor || left_sensor > right_sensor)
+    //             {
+    //                 printf("following case 1\n");
+    //                 //if()
+    //                 robot->direction = RIGHT;
+    //             }
+    //             else
+    //             {
+    //                 printf("following case 2\n");
+    //                 robot->direction = LEFT;
+    //             }
+                    
+    //         }
+    //         else if ((left_sensor>0 && left_back_sensor> 0) || front_left_sensor >0)
+    //         {
+    //             if(front_left_sensor < front_right_sensor ||  left_sensor < right_sensor)
+    //             {
+    //                 printf("following case 3\n");
+    //                 robot->direction = LEFT;
+    //             }
+                    
+    //             else
+    //             {
+    //                 printf("following case 4\n");
+    //                 robot->direction = RIGHT;
+    //             }
+                    
+
+    //         }
+            
+    //         else
+    //         {
+    //             printf("following case 3\n");
+    //             robot->direction = UP;
+    //             if (robot->currentSpeed > SOFT_SPEED_LIMIT) {
+    //                 printf("searching case 5\n");
+    //                 robot->direction = DOWN;
+    //             }
+
+    //         }
+
+    // }
 
 }
 

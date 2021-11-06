@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     renderer = SDL_CreateRenderer(window, -1, 0);
 
     struct Robot robot;
-    robot.maze = Maze5;
+    robot.maze = CRAZY_MAZE;
 ;
     struct Wall_collection *head = NULL;
     int front_left_sensor, front_right_sensor, left_sensor, right_sensor, left_back_sensor, right_back_sensor=0;
