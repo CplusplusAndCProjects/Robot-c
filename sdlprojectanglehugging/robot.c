@@ -564,141 +564,146 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
     printf("maxvalueSensor = %d\n", maxvalueSensor);
     // tang toc ban dau
 
-    if( robot->currentSpeed <=1){
-         robot->currentSpeed = 1;
-    }
-    if (robot->currentSpeed < SOFT_SPEED_LIMIT && giu_khoang_cach == 0) {
-            printf("tang toc case 1\n");
-            //robot->direction = UP;
-            robot->currentSpeed ++;
-    }
-
-    // xác định bên tường đâu tiên chạm vào: 
-
-    switch (wall_follower_status)
+    if(robot->maze != CRAZY_MAZE)
     {
-
-    case 0: // chua cham tuong lan nao
-        {
-            // cham tuong trai lan dau
-            if ((maxvalueSensor == front_left_sensor && maxvalueSensor > front_right_sensor)
-                || (maxvalueSensor == left_sensor && maxvalueSensor > right_sensor)) 
-            {
-                printf("cham tuong trai\n");
-                wall_follower_status = 1;
-                robot->direction = LEFT;
-            }
-
-            // cham tuong phai lan dau
-            else if ((maxvalueSensor == front_right_sensor && maxvalueSensor > front_left_sensor)
-                || (maxvalueSensor == right_sensor  && maxvalueSensor > left_sensor)) 
-            {
-                /* code */
-                printf("cham tuong phai\n");
-                wall_follower_status = 2;
-                robot->direction = RIGHT;
-            }
-            else
-            {
-                // if(maxvalueSensor == front_right_sensor && maxvalueSensor == front_left_sensor &&  front_left_sensor >0)
-                // {
-                //     printf("chon re phai \n");
-                //     robot->direction = RIGHT;
-                //     robot->currentSpeed = 0;
-                // }
-                //else
-                {
-                    printf("di thang \n");
-                    robot->direction = RIGHT;
-
-                }
-
-            }
-            break; 
+        if( robot->currentSpeed <=1){
+            robot->currentSpeed = 1;
+        }
+        if (robot->currentSpeed < SOFT_SPEED_LIMIT && giu_khoang_cach == 0) {
+                printf("tang toc case 1\n");
+                //robot->direction = UP;
+                robot->currentSpeed ++;
         }
 
-    case 1: // cham tuong bên trai dau tien, bam tuong ben trai
-        /* code */
+        // xác định bên tường đâu tiên chạm vào: 
+
+        switch (wall_follower_status)
         {
 
-            int overValue = 2; 
-            if(right_sensor > 0)
+        case 0: // chua cham tuong lan nao
             {
-                overValue = right_sensor;
-            }
-
-            printf("bam tuong trai \n");
-            if(front_left_sensor >0 && front_left_sensor<=overValue && left_sensor >0 && left_sensor <= overValue)
-            {
+                // cham tuong trai lan dau
+                if ((maxvalueSensor == front_left_sensor && maxvalueSensor > front_right_sensor)
+                    || (maxvalueSensor == left_sensor && maxvalueSensor > right_sensor)) 
                 {
+                    printf("cham tuong trai\n");
+                    wall_follower_status = 1;
                     robot->direction = LEFT;
-                    printf("bam tuong trai, di ziczac \n");
                 }
-                giu_khoang_cach = 0;
 
+                // cham tuong phai lan dau
+                else if ((maxvalueSensor == front_right_sensor && maxvalueSensor > front_left_sensor)
+                    || (maxvalueSensor == right_sensor  && maxvalueSensor > left_sensor)) 
+                {
+                    /* code */
+                    printf("cham tuong phai\n");
+                    wall_follower_status = 2;
+                    robot->direction = RIGHT;
+                }
+                else
+                {
+                    // if(maxvalueSensor == front_right_sensor && maxvalueSensor == front_left_sensor &&  front_left_sensor >0)
+                    // {
+                    //     printf("chon re phai \n");
+                    //     robot->direction = RIGHT;
+                    //     robot->currentSpeed = 0;
+                    // }
+                    //else
+                    {
+                        printf("di thang \n");
+                        robot->direction = RIGHT;
+
+                    }
+
+                }
+                break; 
             }
-            else
+
+        case 1: // cham tuong bên trai dau tien, bam tuong ben trai
+            /* code */
             {
-                printf("giu khoang cach \n");
-                robot->direction = RIGHT;
-                giu_khoang_cach = 1;
+
+                int overValue = 2; 
+                if(right_sensor > 0)
+                {
+                    overValue = right_sensor;
+                }
+
+                printf("bam tuong trai \n");
+                if(front_left_sensor >0 && front_left_sensor<=overValue && left_sensor >0 && left_sensor <= overValue)
+                {
+                    {
+                        robot->direction = LEFT;
+                        printf("bam tuong trai, di ziczac \n");
+                    }
+                    giu_khoang_cach = 0;
+
+                }
+                else
+                {
+                    printf("giu khoang cach \n");
+                    robot->direction = RIGHT;
+                    giu_khoang_cach = 1;
+                }
+            
+
+                break;
+            }
+        case 2: // cham tuong bên phai dau tien, bam tuong ben phai
+            /* code */
+            {
+                printf("bam tuong phai \n");
+                int overValue = 2; 
+                // if(left_sensor > 0)
+                // {
+                //     overValue = left_sensor;
+                // }
+
+                if(front_right_sensor >=0 && front_right_sensor<=overValue && right_sensor >=0 && right_sensor <= overValue)
+                {
+                    {
+                        printf("bam tuong phai \n");
+                        robot->direction = RIGHT ;
+                    }
+
+                    giu_khoang_cach = 0;
+                }
+                else
+                {
+                    printf("giu khoang cach \n");
+                    robot->direction = LEFT;
+                    robot->currentSpeed --;
+                    giu_khoang_cach = 1;
+                }
+
+                break;
             }
         
-
+        default:
             break;
+        } 
+        
+        if (robot->direction != UP && robot->direction != DOWN)
+        {   
+            preState14 = preState13;
+            preState13 = preState12;
+            preState12= preState11;
+            preState11 = preState10;
+            preState10 = preState9;
+            preState9 = preState8;
+            preState8 = preState7;
+            preState7 = preState6;
+            preState6 = preState5;
+            preState5 = preState4;
+            preState4 = preState3;
+            preState3 = preState2;
+            preState2 = preState1;
+            preState1 = robot->direction;
         }
-    case 2: // cham tuong bên phai dau tien, bam tuong ben phai
-        /* code */
-        {
-            printf("bam tuong phai \n");
-            int overValue = 2; 
-            // if(left_sensor > 0)
-            // {
-            //     overValue = left_sensor;
-            // }
-
-            if(front_right_sensor >=0 && front_right_sensor<=overValue && right_sensor >=0 && right_sensor <= overValue)
-            {
-                {
-                    printf("bam tuong phai \n");
-                    robot->direction = RIGHT ;
-                }
-
-                giu_khoang_cach = 0;
-            }
-            else
-            {
-                printf("giu khoang cach \n");
-                robot->direction = LEFT;
-                robot->currentSpeed --;
-                giu_khoang_cach = 1;
-            }
-
-            break;
-        }
-    
-    default:
-        break;
-    } 
-    
-    if (robot->direction != UP && robot->direction != DOWN)
-    {   
-        preState14 = preState13;
-        preState13 = preState12;
-        preState12= preState11;
-        preState11 = preState10;
-        preState10 = preState9;
-        preState9 = preState8;
-        preState8 = preState7;
-        preState7 = preState6;
-        preState6 = preState5;
-        preState5 = preState4;
-        preState4 = preState3;
-        preState3 = preState2;
-        preState2 = preState1;
-        preState1 = robot->direction;
     }
-    
+    else {
+        
+    }
 
 }
 
