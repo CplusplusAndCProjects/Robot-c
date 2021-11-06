@@ -36,5 +36,6 @@ void robotUpdate(struct SDL_Renderer * renderer, struct Robot * robot);
 void robotMotorMove(struct Robot * robot);
 void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_right_sensor, int left_sensor, int right_sensor,
                         int left_back_sensor, int right_back_sensor);
-
+int getMaxValueSensor( int front_left_sensor, int front_right_sensor, int left_sensor, int right_sensor,
+                        int left_back_sensor, int right_back_sensor);
 #endif // ROBOT_H_INCLUDED

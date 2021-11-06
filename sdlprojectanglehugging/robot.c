@@ -1,14 +1,9 @@
 #include "robot.h"
 
-int front_left_sensor_old; 
-int front_right_sensor_old;
-int left_sensor_old;
-int right_sensor_old;
-int left_back_sensor_old;
-int right_back_sensor_old;
-
 int preState1= 0, preState2 =0, preState3 =0, preState4 =0, preState5 =0, preState6 =0, preState7 =0, preState8 =0, 
 preState9 =0, preState10 =0, preState11 =0, preState12 =0, preState13 =0,  preState14 =0;
+
+int wall_follower_status = 0; // =1 leftwall, = 2 rightwall
 void setup_robot(struct Robot *robot){
     robot->angle = 0;
     switch (robot->maze) {
@@ -556,79 +551,91 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
                         int left_back_sensor, int right_back_sensor) {
 
     int for_front, away_front, for_main, away_main, for_back, away_back=0;
-    if(front_left_sensor> 0 && front_right_sensor> 0 && left_sensor> 0 && right_sensor> 0 && left_back_sensor> 0 && right_back_sensor> 0){
-        front_left_sensor_old = front_left_sensor; 
-        front_right_sensor_old = front_right_sensor ;
-        left_sensor_old = left_sensor;
-        right_sensor_old = right_sensor ;
-        left_back_sensor_old = left_back_sensor;
-        right_back_sensor_old = right_back_sensor;
-    }
 
     //printf("---new cycle---\n");
     printf("front_left_sensor: %d, front_right_sensor: %d, left_sensor: %d, right_sensor: %d, left_back_sensor: %d, right_back_sensor: %d\n", 
-             front_left_sensor, front_right_sensor, right_sensor, right_sensor, left_back_sensor, right_back_sensor);
+             front_left_sensor, front_right_sensor, left_sensor, right_sensor, left_back_sensor, right_back_sensor);
 
-    printf("preState1: %d, preState2: %d, preState3: %d, preState4: %d, preState5: %d, preState6: %d, preState7: %d, preState8: %d\n", 
-    preState1, preState2, preState3, preState4, preState5, preState6, preState7, preState8);
 
-    if( preState1 == preState2 && preState2 == preState3 && preState3 == preState4 
-    &&
-     preState4 == preState5 && preState5 == preState6 && preState6 == preState7 && preState7 == preState8 && preState8 == preState9 
-    &&
-    preState9 == preState10 && preState10 == preState11 && preState11 == preState12 && preState12 == preState13 && preState13 == preState14
-    && 
-    preState1!=0 && preState1!=UP && preState1!=DOWN){
-         //robot->direction = REVERSE;
-         printf("REVERSE case 1\n");
-    }
-    else
-    {
-        if((right_sensor>0 && right_back_sensor>0) || front_right_sensor >0)
-        {
-            
-            if(front_left_sensor > front_right_sensor || left_sensor > right_sensor)
-            {
-                printf("following case 1\n");
-                robot->direction = RIGHT;
-            }
-            else
-            {
-                printf("following case 2\n");
-                robot->direction = LEFT;
-            }
-                
-        }
-        else if ((left_sensor>0 && left_back_sensor> 0) || front_left_sensor >0)
-        {
-            if(front_left_sensor < front_right_sensor ||  left_sensor < right_sensor)
-            {
-                printf("following case 3\n");
-                robot->direction = LEFT;
-            }
-                
-            else
-            {
-                printf("following case 4\n");
+    int maxvalueSensor = getMaxValueSensor( front_left_sensor, front_right_sensor, left_sensor, right_sensor, left_back_sensor, right_back_sensor);
 
-                robot->direction = RIGHT;
-            }
-                
+    // di vao ngo cut
 
-        }
-        
-        else
-        {
-            printf("following case 5\n");
+    // xác định bên tường đâu tiên chạm vào: 
+    if(robot->currentSpeed <=0)
+         robot->direction = UP;
+
+    if (robot->currentSpeed < SOFT_SPEED_LIMIT) {
+            printf("tang toc case 1\n");
             robot->direction = UP;
-            if (robot->currentSpeed > SOFT_SPEED_LIMIT) {
-                printf("following case 6\n");
-                robot->direction = DOWN;
-            }
-
-        }
     }
 
+    switch (wall_follower_status)
+    {
+
+    case 0: // chua cham tuong lan nao
+        {
+            // cham tuong trai lan dau
+            if ((maxvalueSensor == front_left_sensor && maxvalueSensor > front_right_sensor)
+                || (maxvalueSensor == left_sensor && maxvalueSensor > right_sensor)) 
+            {
+                printf("cham tuong trai\n");
+                wall_follower_status = 1;
+                robot->direction = LEFT;
+            }
+
+            // cham tuong phai lan dau
+            else if ((maxvalueSensor == front_right_sensor && maxvalueSensor > front_left_sensor)
+                || (maxvalueSensor == right_sensor  && maxvalueSensor > left_sensor)) 
+            {
+                /* code */
+                printf("cham tuong phai\n");
+                wall_follower_status = 2;
+                robot->direction = RIGHT;
+            }
+            else
+            {
+                printf("di thang \n");
+                robot->direction = UP;
+            }
+            break; 
+        }
+
+    case 1: // cham tuong bên trai dau tien, bam tuong ben trai
+        /* code */
+        {
+            printf("bam tuong trai \n");
+            if(front_left_sensor >0 && front_left_sensor<3 && left_sensor >0 && left_sensor <3)
+            {
+                robot->direction = LEFT;
+            }
+            else
+            {
+                robot->direction = RIGHT;
+            }
+
+            break;
+        }
+    case 2: // cham tuong bên phai dau tien, bam tuong ben phai
+        /* code */
+        {
+            printf("bam tuong phai \n");
+            if(front_right_sensor >0 && front_right_sensor<3 && right_sensor >0 && right_sensor <3)
+            {
+                robot->direction = LEFT;
+            }
+            else
+            {
+                robot->direction = RIGHT;
+            }
+
+            break;
+        }
+    
+    default:
+        break;
+    } 
+    
     if (robot->direction != UP && robot->direction != DOWN)
     {   
         preState14 = preState13;
@@ -650,6 +657,36 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
 
 }
 
+int getMaxValueSensor( int front_left_sensor, int front_right_sensor, int left_sensor, int right_sensor,
+                        int left_back_sensor, int right_back_sensor)
+    {
+        int max = 0;
+        if (max < front_left_sensor)
+        {
+            max = front_left_sensor;
+        }
+        if (max < front_right_sensor)
+        {
+            max = front_right_sensor;
+        }
+        if (max < left_sensor)
+        {
+            max = left_sensor;
+        }
+        if (max < right_sensor)
+        {
+            max = right_sensor;
+        }
+        if (max < left_back_sensor)
+        {
+            max = left_back_sensor;
+        }
+        if (max < right_back_sensor)
+        {
+            max = right_back_sensor;
+        }
+        return max;
+    }
 // void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_right_sensor, int left_sensor, int right_sensor,
 //                         int left_back_sensor, int right_back_sensor) 
 //                         {
