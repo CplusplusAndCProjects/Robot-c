@@ -4,6 +4,7 @@ int preState1= 0, preState2 =0, preState3 =0, preState4 =0, preState5 =0, preSta
 preState9 =0, preState10 =0, preState11 =0, preState12 =0, preState13 =0,  preState14 =0;
 
 int wall_follower_status = 0; // =1 leftwall, = 2 rightwall
+int giu_khoang_cach = 0;
 void setup_robot(struct Robot *robot){
     robot->angle = 0;
     switch (robot->maze) {
@@ -557,18 +558,22 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
              front_left_sensor, front_right_sensor, left_sensor, right_sensor, left_back_sensor, right_back_sensor);
 
 
-    int maxvalueSensor = getMaxValueSensor( front_left_sensor, front_right_sensor, left_sensor, right_sensor, left_back_sensor, right_back_sensor);
+    // implement via wall follower algorithm
 
-    // di vao ngo cut
+    int maxvalueSensor = getMaxValueSensor( front_left_sensor, front_right_sensor, left_sensor, right_sensor, left_back_sensor, right_back_sensor);
+    printf("maxvalueSensor = %d\n", maxvalueSensor);
+    // tang toc ban dau
+
+    if( robot->currentSpeed <=1){
+         robot->currentSpeed = 1;
+    }
+    if (robot->currentSpeed < SOFT_SPEED_LIMIT && giu_khoang_cach == 0) {
+            printf("tang toc case 1\n");
+            //robot->direction = UP;
+            robot->currentSpeed ++;
+    }
 
     // xác định bên tường đâu tiên chạm vào: 
-    if(robot->currentSpeed <=0)
-         robot->direction = UP;
-
-    if (robot->currentSpeed < SOFT_SPEED_LIMIT) {
-            printf("tang toc case 1\n");
-            robot->direction = UP;
-    }
 
     switch (wall_follower_status)
     {
@@ -595,8 +600,19 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
             }
             else
             {
-                printf("di thang \n");
-                robot->direction = UP;
+                // if(maxvalueSensor == front_right_sensor && maxvalueSensor == front_left_sensor &&  front_left_sensor >0)
+                // {
+                //     printf("chon re phai \n");
+                //     robot->direction = RIGHT;
+                //     robot->currentSpeed = 0;
+                // }
+                //else
+                {
+                    printf("di thang \n");
+                    robot->direction = RIGHT;
+
+                }
+
             }
             break; 
         }
@@ -604,15 +620,30 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
     case 1: // cham tuong bên trai dau tien, bam tuong ben trai
         /* code */
         {
-            printf("bam tuong trai \n");
-            if(front_left_sensor >0 && front_left_sensor<3 && left_sensor >0 && left_sensor <3)
+
+            int overValue = 2; 
+            if(right_sensor > 0)
             {
-                robot->direction = LEFT;
+                overValue = right_sensor;
+            }
+
+            printf("bam tuong trai \n");
+            if(front_left_sensor >0 && front_left_sensor<=overValue && left_sensor >0 && left_sensor <= overValue)
+            {
+                {
+                    robot->direction = LEFT;
+                    printf("bam tuong trai, di ziczac \n");
+                }
+                giu_khoang_cach = 0;
+
             }
             else
             {
+                printf("giu khoang cach \n");
                 robot->direction = RIGHT;
+                giu_khoang_cach = 1;
             }
+        
 
             break;
         }
@@ -620,13 +651,27 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
         /* code */
         {
             printf("bam tuong phai \n");
-            if(front_right_sensor >0 && front_right_sensor<3 && right_sensor >0 && right_sensor <3)
+            int overValue = 2; 
+            // if(left_sensor > 0)
+            // {
+            //     overValue = left_sensor;
+            // }
+
+            if(front_right_sensor >=0 && front_right_sensor<=overValue && right_sensor >=0 && right_sensor <= overValue)
             {
-                robot->direction = LEFT;
+                {
+                    printf("bam tuong phai \n");
+                    robot->direction = RIGHT ;
+                }
+
+                giu_khoang_cach = 0;
             }
             else
             {
-                robot->direction = RIGHT;
+                printf("giu khoang cach \n");
+                robot->direction = LEFT;
+                robot->currentSpeed --;
+                giu_khoang_cach = 1;
             }
 
             break;
