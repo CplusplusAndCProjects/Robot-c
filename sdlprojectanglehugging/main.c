@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     renderer = SDL_CreateRenderer(window, -1, 0);
 
     struct Robot robot;
-    robot.maze = Maze6;
+    robot.maze = CRAZY_MAZE;
 ;
     struct Wall_collection *head = NULL;
     int front_left_sensor, front_right_sensor, left_sensor, right_sensor, left_back_sensor, right_back_sensor=0;
@@ -244,6 +244,7 @@ int main(int argc, char *argv[]) {
             insertAndSetFirstWall(&head, 2,  530, 100, 70, 10);
             insertAndSetFirstWall(&head, 2,  530, 80, 10, 20);
             insertAndSetFirstWall(&head, 2,  530, 80, 110, 10);
+            break;
         }
 
         case Maze6:

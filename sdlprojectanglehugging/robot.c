@@ -1,5 +1,14 @@
 #include "robot.h"
 
+int front_left_sensor_old; 
+int front_right_sensor_old;
+int left_sensor_old;
+int right_sensor_old;
+int left_back_sensor_old;
+int right_back_sensor_old;
+
+int preState1= 0, preState2 =0, preState3 =0, preState4 =0, preState5 =0, preState6 =0, preState7 =0, preState8 =0, 
+preState9 =0, preState10 =0, preState11 =0, preState12 =0, preState13 =0,  preState14 =0;
 void setup_robot(struct Robot *robot){
     robot->angle = 0;
     switch (robot->maze) {
@@ -71,6 +80,7 @@ void setup_robot(struct Robot *robot){
             robot->crashed = 0;
             robot->auto_mode = 0;
             printf("Press arrow keys to move manually, or enter to move automatically\n\n");
+            break;
         }
 
 
@@ -522,6 +532,10 @@ void robotMotorMove(struct Robot * robot) {
         case RIGHT :
             robot->angle = (robot->angle+DEFAULT_ANGLE_CHANGE)%360;
             break;
+        case REVERSE:
+            robot->angle = (robot->angle+DEFAULT_ANGLE_CHANGE+ 180 )%360;
+            break;
+        
     }
     robot->direction = 0;
     x_offset = (-robot->currentSpeed * sin(-robot->angle*PI/180));
@@ -542,62 +556,103 @@ void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_r
                         int left_back_sensor, int right_back_sensor) {
 
     int for_front, away_front, for_main, away_main, for_back, away_back=0;
-
-
+    if(front_left_sensor> 0 && front_right_sensor> 0 && left_sensor> 0 && right_sensor> 0 && left_back_sensor> 0 && right_back_sensor> 0){
+        front_left_sensor_old = front_left_sensor; 
+        front_right_sensor_old = front_right_sensor ;
+        left_sensor_old = left_sensor;
+        right_sensor_old = right_sensor ;
+        left_back_sensor_old = left_back_sensor;
+        right_back_sensor_old = right_back_sensor;
+    }
 
     //printf("---new cycle---\n");
-    printf("front_left_sensor: %d, front_right_sensor: %d, left_sensor: %d, right_sensor: %d, left_back_sensor: %d, right_back_sensor: %d\n", front_left_sensor, front_right_sensor, 
-    right_sensor, right_sensor, left_back_sensor, right_back_sensor);
+    printf("front_left_sensor: %d, front_right_sensor: %d, left_sensor: %d, right_sensor: %d, left_back_sensor: %d, right_back_sensor: %d\n", 
+             front_left_sensor, front_right_sensor, right_sensor, right_sensor, left_back_sensor, right_back_sensor);
 
+    printf("preState1: %d, preState2: %d, preState3: %d, preState4: %d, preState5: %d, preState6: %d, preState7: %d, preState8: %d\n", 
+    preState1, preState2, preState3, preState4, preState5, preState6, preState7, preState8);
 
-    if((right_sensor>0 && right_back_sensor>0) || front_right_sensor >0)
-    {
-        
-        if(front_left_sensor > front_right_sensor || left_sensor > right_sensor)
-        {
-            printf("following case 1\n");
-            //if()
-            robot->direction = RIGHT;
-        }
-        else
-        {
-            printf("following case 2\n");
-            robot->direction = LEFT;
-        }
-            
+    if( preState1 == preState2 && preState2 == preState3 && preState3 == preState4 
+    &&
+     preState4 == preState5 && preState5 == preState6 && preState6 == preState7 && preState7 == preState8 && preState8 == preState9 
+    &&
+    preState9 == preState10 && preState10 == preState11 && preState11 == preState12 && preState12 == preState13 && preState13 == preState14
+    && 
+    preState1!=0 && preState1!=UP && preState1!=DOWN){
+         //robot->direction = REVERSE;
+         printf("REVERSE case 1\n");
     }
-    else if ((left_sensor>0 && left_back_sensor> 0) || front_left_sensor >0)
-    {
-        if(front_left_sensor < front_right_sensor ||  left_sensor < right_sensor)
-        {
-            printf("following case 3\n");
-            robot->direction = LEFT;
-        }
-            
-        else
-        {
-            printf("following case 4\n");
-            robot->direction = RIGHT;
-        }
-            
-
-    }
-    
     else
     {
-        printf("following case 3\n");
-        robot->direction = UP;
-        if (robot->currentSpeed > SOFT_SPEED_LIMIT) {
-            printf("searching case 5\n");
-            robot->direction = DOWN;
+        if((right_sensor>0 && right_back_sensor>0) || front_right_sensor >0)
+        {
+            
+            if(front_left_sensor > front_right_sensor || left_sensor > right_sensor)
+            {
+                printf("following case 1\n");
+                robot->direction = RIGHT;
+            }
+            else
+            {
+                printf("following case 2\n");
+                robot->direction = LEFT;
+            }
+                
         }
+        else if ((left_sensor>0 && left_back_sensor> 0) || front_left_sensor >0)
+        {
+            if(front_left_sensor < front_right_sensor ||  left_sensor < right_sensor)
+            {
+                printf("following case 3\n");
+                robot->direction = LEFT;
+            }
+                
+            else
+            {
+                printf("following case 4\n");
 
+                robot->direction = RIGHT;
+            }
+                
+
+        }
+        
+        else
+        {
+            printf("following case 5\n");
+            robot->direction = UP;
+            if (robot->currentSpeed > SOFT_SPEED_LIMIT) {
+                printf("following case 6\n");
+                robot->direction = DOWN;
+            }
+
+        }
     }
+
+    if (robot->direction != UP && robot->direction != DOWN)
+    {   
+        preState14 = preState13;
+        preState13 = preState12;
+        preState12= preState11;
+        preState11 = preState10;
+        preState10 = preState9;
+        preState9 = preState8;
+        preState8 = preState7;
+        preState7 = preState6;
+        preState6 = preState5;
+        preState5 = preState4;
+        preState4 = preState3;
+        preState3 = preState2;
+        preState2 = preState1;
+        preState1 = robot->direction;
+    }
+    
 
 }
 
 // void robotAutoMotorMove(struct Robot * robot, int front_left_sensor, int front_right_sensor, int left_sensor, int right_sensor,
-//                         int left_back_sensor, int right_back_sensor) {
+//                         int left_back_sensor, int right_back_sensor) 
+//                         {
 
 //     int for_front, away_front, for_main, away_main, for_back, away_back=0;
 
